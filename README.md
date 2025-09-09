@@ -1,5 +1,17 @@
 # HW 0: Intro to Javascript and WebGL
 
+## Joanne Li
+
+[Demo](http://luoluobuli.github.io/CIS566-hw00-intro-base)
+
+In this project, I added a cube with a GUI parameter to set its color, a fragment shader to implement FBM noise to apply on the cube's texture, and a vertex shader that twists the cube's vertex positions over time. 
+
+For the color, I first didn't notice that there's a uniform in the fragment shader, so I implemented the color parameter by modifying the vertex colors (I assigned all vertex the same input color), and pass it to the vertex shader. It worked and then I found out there's a much easier way to change color... Since it works I just keep it that way.
+
+For the fragment shader, I use the fbm value as a mask to blend the cube's base color and another color - I just set it to white. 
+
+For the vertex shader, I first got the delta time from the `tick()` function, and pass it to the vertex shader as a uniform, and use it to modify the vertex positions. 
+
 <p align="center">
   <img width="360" height="360" src="https://user-images.githubusercontent.com/1758825/132532354-e3a45402-e484-499e-bfa7-2d73b9f2c946.png">
 </p>
