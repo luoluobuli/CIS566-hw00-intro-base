@@ -6,17 +6,20 @@ class Cube extends Drawable {
   positions: Float32Array;
   normals: Float32Array;
   indices: Uint32Array;
+  colors: Float32Array;
+  color: number[];
   center: vec4;
 
-  constructor(center: vec3, public size: number) {
+  constructor(center: vec3, public size: number, base_color: number[]) {
     super();
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
+    this.color = base_color;
   }
 
   create() {
     const half = this.size / 2.0;
 
-    // Position data (x, y, z, w)
+    // Positions
     const posArr: number[] = [
       -half, -half,  half, 1,   // 0
        half, -half,  half, 1,   // 1
@@ -28,7 +31,7 @@ class Cube extends Drawable {
       -half,  half, -half, 1    // 7
     ];
 
-    // Index data (two triangles per face → 12 triangles → 36 indices)
+    // Indices
     const idxArr: number[] = [
       0,1,2,  0,2,3,   // Front
       1,5,6,  1,6,2,   // Right
@@ -38,8 +41,7 @@ class Cube extends Drawable {
       4,5,1,  4,1,0    // Bottom
     ];
 
-    // Normal data (x, y, z, w). Here each vertex normal = direction of face.
-    // If you want "flat" shading, you’d duplicate vertices so each face has unique normals.
+    // Normals
     const normArr: number[] = [
        0, 0, 1, 0,   // front
        0, 0, 1, 0,
@@ -52,15 +54,28 @@ class Cube extends Drawable {
        0, 0,-1, 0
     ];
 
+    // Vertex colors
+    const r = this.color[0] / 255;
+    const g = this.color[1] / 255;
+    const b = this.color[2] / 255;
+    const a = 1.0;
+
+    const colArr: number[] = [];
+    for (let i = 0; i < 8; i++) {  // Push the same RGBA for each vertex
+        colArr.push(r, g, b, a);
+    }
+
     // Convert to typed arrays
     this.positions = new Float32Array(posArr);
-    this.normals   = new Float32Array(normArr);
-    this.indices   = new Uint32Array(idxArr);
+    this.normals = new Float32Array(normArr);
+    this.indices = new Uint32Array(idxArr);
+    this.colors = new Float32Array(colArr);
 
     // Upload to GPU
     this.generateIdx();
     this.generatePos();
     this.generateNor();
+    this.generateCol();
 
     this.count = this.indices.length;
 
@@ -68,10 +83,13 @@ class Cube extends Drawable {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufPos);
-    gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.DYNAMIC_DRAW);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufNor);
     gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
+    gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.DYNAMIC_DRAW);
 
     console.log(`Created cube with ${this.positions.length / 4} vertices`);
   }

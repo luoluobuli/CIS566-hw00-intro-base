@@ -14,7 +14,7 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Cube Size': 1.0,
-  color: [204, 204, 204],
+  color: [0, 0, 0],
   'Load Scene': loadScene, // A function pointer, essentially
 };
 
@@ -23,13 +23,14 @@ let square: Square;
 let cube: Cube;
 let prevTesselations: number = 5;
 let prevCubeSize: number = 1.0;
+let prevColor = [0, 0, 0];
 
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
-  cube = new Cube(vec3.fromValues(0, 0, 0), controls['Cube Size']);
+  cube = new Cube(vec3.fromValues(0, 0, 0), controls['Cube Size'], controls.color);
   cube.create();
 }
 
@@ -70,11 +71,20 @@ function main() {
 
   const lambert = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/custom-frag.glsl')),
   ]);
+
+  const uTimeLoc = gl.getUniformLocation(lambert.prog, 'u_Time');
+  let start = performance.now();
 
   // This function will be called every frame
   function tick() {
+
+    const now = performance.now();
+    const t = (now - start) * 0.001;
+    gl.useProgram(lambert.prog);
+    gl.uniform1f(uTimeLoc, t);
+
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
@@ -90,7 +100,17 @@ function main() {
     if(controls["Cube Size"] != prevCubeSize)
     {
       prevCubeSize = controls["Cube Size"];
-      cube = new Cube(vec3.fromValues(0, 0, 0), prevCubeSize);
+      cube = new Cube(vec3.fromValues(0, 0, 0), prevCubeSize, prevColor);
+      cube.create();
+    }
+
+    if(controls.color[0] != prevColor[0] || 
+      controls.color[1] != prevColor[1] || 
+      controls.color[2] != prevColor[2]
+    )
+    {
+      prevColor = controls.color;
+      cube = new Cube(vec3.fromValues(0, 0, 0), prevCubeSize, prevColor);
       cube.create();
     }
 
