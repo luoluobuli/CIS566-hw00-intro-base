@@ -4,6 +4,8 @@
 
 [Demo](http://luoluobuli.github.io/CIS566-hw00-intro-base)
 
+![](images/screenshot.png)
+
 In this project, I added a cube with a GUI parameter to set its color, a fragment shader to implement FBM noise to apply on the cube's texture, and a vertex shader that twists the cube's vertex positions over time. 
 
 For the color, I first didn't notice that there's a uniform in the fragment shader, so I implemented the color parameter by modifying the vertex colors (I assigned all vertex the same input color), and pass it to the vertex shader. It worked and then I found out there's a much easier way to change color... Since it works I just keep it that way.
