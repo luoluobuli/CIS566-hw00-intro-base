@@ -1,7 +1,8 @@
-import {vec3} from 'gl-matrix';
+import {vec3, vec4} from 'gl-matrix';
 const Stats = require('stats-js');
 import * as DAT from 'dat.gui';
 import Icosphere from './geometry/Icosphere';
+import Cube from './geometry/Cube';
 import Square from './geometry/Square';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
@@ -12,18 +13,24 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
   tesselations: 5,
+  'Cube Size': 1.0,
+  color: [204, 204, 204],
   'Load Scene': loadScene, // A function pointer, essentially
 };
 
 let icosphere: Icosphere;
 let square: Square;
+let cube: Cube;
 let prevTesselations: number = 5;
+let prevCubeSize: number = 1.0;
 
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
+  cube = new Cube(vec3.fromValues(0, 0, 0), controls['Cube Size']);
+  cube.create();
 }
 
 function main() {
@@ -37,7 +44,9 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-  gui.add(controls, 'tesselations', 0, 8).step(1);
+  //gui.add(controls, 'tesselations', 0, 8).step(1);
+  gui.add(controls, 'Cube Size', 0.5, 3.0).step(0.1);
+  gui.addColor(controls, 'color');
   gui.add(controls, 'Load Scene');
 
   // get canvas and webgl context
@@ -70,15 +79,25 @@ function main() {
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
+
     if(controls.tesselations != prevTesselations)
     {
       prevTesselations = controls.tesselations;
       icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
       icosphere.create();
     }
+
+    if(controls["Cube Size"] != prevCubeSize)
+    {
+      prevCubeSize = controls["Cube Size"];
+      cube = new Cube(vec3.fromValues(0, 0, 0), prevCubeSize);
+      cube.create();
+    }
+
     renderer.render(camera, lambert, [
-      icosphere,
+      // icosphere,
       // square,
+      cube
     ]);
     stats.end();
 
